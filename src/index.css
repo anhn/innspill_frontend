@@ -1,0 +1,289 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+
+    --primary: 263 70% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 274 80% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 263 70% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 263 70% 50%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 274 80% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 263 70% 45%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 263 70% 40%;
+    --sidebar-ring: 274 80% 60%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(274 80% 60%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 5% 98%));
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 8% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 8% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 263 70% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 274 80% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 263 70% 50%;
+
+    --sidebar-background: 240 8% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 263 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 12%;
+    --sidebar-ring: 263 70% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* MDEditor Styles */
+.w-md-editor {
+  border: none !important;
+  box-shadow: none !important;
+  height: 500px !important;
+}
+
+.w-md-editor-toolbar {
+  border-bottom: 1px solid hsl(var(--border)) !important;
+  background-color: hsl(var(--muted)) !important;
+  flex-shrink: 0 !important;
+}
+
+.w-md-editor-content {
+  height: calc(500px - 40px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.w-md-editor-text-container {
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+.w-md-editor-text {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  height: 100% !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.w-md-editor-text-input {
+  height: 100% !important;
+  resize: none !important;
+}
+
+.w-md-editor-preview {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  padding: 16px !important;
+}
+
+.w-md-editor-text .wmde-markdown {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.w-md-editor-preview .wmde-markdown {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure toolbar buttons work */
+.w-md-editor-toolbar button {
+  cursor: pointer !important;
+}
+
+.w-md-editor-toolbar button:hover {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* Fix editor container height */
+.w-md-editor-wrapper {
+  height: 500px !important;
+}
+
+/* Preview mode styling */
+.w-md-editor-preview .wmde-markdown h1,
+.w-md-editor-preview .wmde-markdown h2,
+.w-md-editor-preview .wmde-markdown h3,
+.w-md-editor-preview .wmde-markdown h4,
+.w-md-editor-preview .wmde-markdown h5,
+.w-md-editor-preview .wmde-markdown h6 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.w-md-editor-preview .wmde-markdown p {
+  color: hsl(var(--foreground)) !important;
+  margin: 8px 0 !important;
+}
+
+.w-md-editor-preview .wmde-markdown ul,
+.w-md-editor-preview .wmde-markdown ol {
+  color: hsl(var(--foreground)) !important;
+}
+
+.w-md-editor-preview .wmde-markdown strong {
+  color: hsl(var(--foreground)) !important;
+  font-weight: bold !important;
+}
+
+.w-md-editor-preview .wmde-markdown em {
+  color: hsl(var(--foreground)) !important;
+  font-style: italic !important;
+}
+
+/* Print styles for worksheets */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  .print\\:bg-white {
+    background: white !important;
+  }
+
+  .print\\:text-black {
+    color: black !important;
+  }
+
+  .print\\:border-b-2 {
+    border-bottom-width: 2px !important;
+  }
+
+  .print\\:border-gray-300 {
+    border-color: #d1d5db !important;
+  }
+
+  .print\\:text-3xl {
+    font-size: 1.875rem !important;
+  }
+
+  .print\\:text-base {
+    font-size: 1rem !important;
+  }
+
+  .print\\:text-lg {
+    font-size: 1.125rem !important;
+  }
+
+  .print\\:mt-2 {
+    margin-top: 0.5rem !important;
+  }
+
+  .print\\:mt-6 {
+    margin-top: 1.5rem !important;
+  }
+
+  .print\\:mt-8 {
+    margin-top: 2rem !important;
+  }
+
+  .print\\:mt-12 {
+    margin-top: 3rem !important;
+  }
+
+  .print\\:font-bold {
+    font-weight: 700 !important;
+  }
+
+  .print\\:prose-lg {
+    font-size: 1.125rem !important;
+    line-height: 1.75 !important;
+  }
+
+  .print\\:max-w-full {
+    max-width: 100% !important;
+  }
+
+  .print\\:p-0 {
+    padding: 0 !important;
+  }
+
+  .print\\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  .print\\:border-0 {
+    border: none !important;
+  }
+}
