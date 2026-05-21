@@ -3,11 +3,14 @@
 This document specifies all API endpoints required for the Assessment Dashboard feature in the Teacher Workspace.
 
 ## Base URL
+
 - Development: `http://localhost:3000/api/v1`
 - Production: `https://innspill.ai/microapi/api/v1`
 
 ## Authentication
+
 All endpoints require authentication. Include user identification via:
+
 - `userName` query parameter or
 - Authentication token in headers (if implemented)
 
@@ -18,9 +21,11 @@ All endpoints require authentication. Include user identification via:
 A project represents a course project. Each course can have only one project.
 
 ### 1.1 Create Project
+
 **Endpoint:** `POST /projects`
 
 **Request Body:**
+
 ```json
 {
   "courseId": "string (required)",
@@ -35,6 +40,7 @@ A project represents a course project. Each course can have only one project.
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -53,6 +59,7 @@ A project represents a course project. Each course can have only one project.
 ```
 
 **Error Response (400/500):**
+
 ```json
 {
   "success": false,
@@ -64,9 +71,11 @@ A project represents a course project. Each course can have only one project.
 ---
 
 ### 1.2 Get Project by ID
+
 **Endpoint:** `GET /projects/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -87,12 +96,15 @@ A project represents a course project. Each course can have only one project.
 ---
 
 ### 1.3 Get Project by Course
+
 **Endpoint:** `GET /projects/course/:courseId`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -115,14 +127,17 @@ A project represents a course project. Each course can have only one project.
 ---
 
 ### 1.4 List All Projects
+
 **Endpoint:** `GET /projects`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 - `courseId` (optional): Filter by course ID
 - `teacherId` (optional): Filter by teacher ID
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -145,9 +160,11 @@ A project represents a course project. Each course can have only one project.
 ---
 
 ### 1.5 Update Project
+
 **Endpoint:** `PUT /projects/:id`
 
 **Request Body:**
+
 ```json
 {
   "courseDescription": "string",
@@ -160,6 +177,7 @@ A project represents a course project. Each course can have only one project.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -180,9 +198,11 @@ A project represents a course project. Each course can have only one project.
 ---
 
 ### 1.6 Delete Project
+
 **Endpoint:** `DELETE /projects/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -199,9 +219,11 @@ A project represents a course project. Each course can have only one project.
 Tasks belong to a project and represent assignments for students.
 
 ### 2.1 Create Task
+
 **Endpoint:** `POST /assessment-tasks`
 
 **Request Body:**
+
 ```json
 {
   "projectId": "string (required)",
@@ -222,6 +244,7 @@ Tasks belong to a project and represent assignments for students.
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -249,9 +272,11 @@ Tasks belong to a project and represent assignments for students.
 ---
 
 ### 2.2 Get Task by ID
+
 **Endpoint:** `GET /assessment-tasks/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -279,12 +304,15 @@ Tasks belong to a project and represent assignments for students.
 ---
 
 ### 2.3 Get Tasks by Project
+
 **Endpoint:** `GET /assessment-tasks/project/:projectId`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -314,13 +342,16 @@ Tasks belong to a project and represent assignments for students.
 ---
 
 ### 2.4 List All Tasks
+
 **Endpoint:** `GET /assessment-tasks`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 - `projectId` (optional): Filter by project ID
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -350,11 +381,13 @@ Tasks belong to a project and represent assignments for students.
 ---
 
 ### 2.5 Update Task
+
 **Endpoint:** `PUT /assessment-tasks/:id`
 
 **Request Body:** (Same as Create Task, all fields optional except those that are conditionally required)
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -382,9 +415,11 @@ Tasks belong to a project and represent assignments for students.
 ---
 
 ### 2.6 Delete Task
+
 **Endpoint:** `DELETE /assessment-tasks/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -401,9 +436,11 @@ Tasks belong to a project and represent assignments for students.
 Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedback to students.
 
 ### 3.1 Create Role
+
 **Endpoint:** `POST /assessment-roles`
 
 **Request Body:**
+
 ```json
 {
   "projectId": "string (required)",
@@ -415,6 +452,7 @@ Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedbac
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -434,9 +472,11 @@ Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedbac
 ---
 
 ### 3.2 Get Role by ID
+
 **Endpoint:** `GET /assessment-roles/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -456,12 +496,15 @@ Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedbac
 ---
 
 ### 3.3 Get Roles by Project
+
 **Endpoint:** `GET /assessment-roles/project/:projectId`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -483,13 +526,16 @@ Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedbac
 ---
 
 ### 3.4 List All Roles
+
 **Endpoint:** `GET /assessment-roles`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 - `projectId` (optional): Filter by project ID
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -511,11 +557,13 @@ Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedbac
 ---
 
 ### 3.5 Update Role
+
 **Endpoint:** `PUT /assessment-roles/:id`
 
 **Request Body:** (Same as Create Role, all fields optional)
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -535,9 +583,11 @@ Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedbac
 ---
 
 ### 3.6 Delete Role
+
 **Endpoint:** `DELETE /assessment-roles/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -552,9 +602,11 @@ Roles represent stakeholders (e.g., mentors, reviewers) that can provide feedbac
 Quizzes are generated based on tasks and keywords, and can be edited with version history.
 
 ### 4.1 Generate Quiz
+
 **Endpoint:** `POST /assessment-quizzes/generate`
 
 **Request Body:**
+
 ```json
 {
   "projectId": "string (required)",
@@ -566,6 +618,7 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -592,9 +645,11 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ---
 
 ### 4.2 Create Quiz
+
 **Endpoint:** `POST /assessment-quizzes`
 
 **Request Body:**
+
 ```json
 {
   "projectId": "string (required)",
@@ -610,6 +665,7 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -634,9 +690,11 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ---
 
 ### 4.3 Get Quiz by ID
+
 **Endpoint:** `GET /assessment-quizzes/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -675,12 +733,15 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ---
 
 ### 4.4 Get Quizzes by Project
+
 **Endpoint:** `GET /assessment-quizzes/project/:projectId`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -721,13 +782,16 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ---
 
 ### 4.5 List All Quizzes
+
 **Endpoint:** `GET /assessment-quizzes`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 - `projectId` (optional): Filter by project ID
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -768,9 +832,11 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ---
 
 ### 4.6 Update Quiz
+
 **Endpoint:** `PUT /assessment-quizzes/:id`
 
 **Request Body:**
+
 ```json
 {
   "questions": [
@@ -786,6 +852,7 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -826,9 +893,11 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 ---
 
 ### 4.7 Delete Quiz
+
 **Endpoint:** `DELETE /assessment-quizzes/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -843,9 +912,11 @@ Quizzes are generated based on tasks and keywords, and can be edited with versio
 Submissions represent student work submitted for tasks, with feedback from stakeholders.
 
 ### 5.1 Create Submission
+
 **Endpoint:** `POST /assessment-submissions`
 
 **Request Body:**
+
 ```json
 {
   "taskId": "string (required)",
@@ -859,6 +930,7 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -883,9 +955,11 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.2 Get Submission by ID
+
 **Endpoint:** `GET /assessment-submissions/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -910,13 +984,16 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.3 Get Submissions by Task
+
 **Endpoint:** `GET /assessment-submissions/task/:taskId`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 - `stakeholderId` (optional): Filter by stakeholder ID
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -943,13 +1020,16 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.4 Get Submissions by Student
+
 **Endpoint:** `GET /assessment-submissions/student/:studentId`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 - `taskId` (optional): Filter by task ID
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -976,15 +1056,18 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.5 List All Submissions
+
 **Endpoint:** `GET /assessment-submissions`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 - `taskId` (optional): Filter by task ID
 - `studentId` (optional): Filter by student ID
 - `stakeholderId` (optional): Filter by stakeholder ID
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1011,9 +1094,11 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.6 Update Submission
+
 **Endpoint:** `PUT /assessment-submissions/:id`
 
 **Request Body:**
+
 ```json
 {
   "submission": "string (optional)",
@@ -1025,6 +1110,7 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1049,9 +1135,11 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.7 Delete Submission
+
 **Endpoint:** `DELETE /assessment-submissions/:id`
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1062,9 +1150,11 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.8 Generate Feedback for Submission
+
 **Endpoint:** `POST /assessment-submissions/:id/generate-feedback`
 
 **Request Body:**
+
 ```json
 {
   "stakeholderId": "string (optional)", // If feedback should be from a specific stakeholder role
@@ -1073,6 +1163,7 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1086,6 +1177,7 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ```
 
 **Note:** This endpoint should use AI/LLM to generate feedback based on:
+
 - The submission content
 - Task evaluation criteria
 - Stakeholder persona (if stakeholderId is provided)
@@ -1095,9 +1187,11 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 5.9 Generate Feedback for Multiple Submissions
+
 **Endpoint:** `POST /assessment-submissions/generate-feedback-batch`
 
 **Request Body:**
+
 ```json
 {
   "submissionIds": ["string"], // Array of submission IDs
@@ -1107,6 +1201,7 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1131,13 +1226,16 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ## 6. Analytics & Reporting Endpoints
 
 ### 6.1 Get Submission Heatmap Data
+
 **Endpoint:** `GET /assessment-submissions/heatmap`
 
 **Query Parameters:**
+
 - `projectId` (required): Project ID
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1164,13 +1262,16 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 6.2 Get Stakeholder Interaction Heatmap
+
 **Endpoint:** `GET /assessment-submissions/stakeholder-heatmap`
 
 **Query Parameters:**
+
 - `projectId` (required): Project ID
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1197,14 +1298,17 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 6.3 Get Progress Data
+
 **Endpoint:** `GET /assessment-submissions/progress`
 
 **Query Parameters:**
+
 - `projectId` (required): Project ID
 - `studentId` (optional): Filter by student ID
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1228,14 +1332,17 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 6.4 Get Timeline Data
+
 **Endpoint:** `GET /assessment-submissions/timeline`
 
 **Query Parameters:**
+
 - `projectId` (required): Project ID
 - `studentId` (optional): Filter by student ID
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1257,12 +1364,15 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 6.5 Get Quiz Leaderboard
+
 **Endpoint:** `GET /assessment-quizzes/:quizId/leaderboard`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1284,12 +1394,15 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ---
 
 ### 6.6 Get Student Quiz Answers
+
 **Endpoint:** `GET /assessment-quizzes/:quizId/student/:studentId`
 
 **Query Parameters:**
+
 - `userName` (optional): Teacher username
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1319,13 +1432,16 @@ Submissions represent student work submitted for tasks, with feedback from stake
 ## 7. File Upload Endpoints
 
 ### 7.1 Upload Attachment
+
 **Endpoint:** `POST /assessment/upload`
 
 **Request:**
+
 - Content-Type: `multipart/form-data`
 - Body: File(s) to upload
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1347,6 +1463,7 @@ Submissions represent student work submitted for tasks, with feedback from stake
 All endpoints may return the following error responses:
 
 **400 Bad Request:**
+
 ```json
 {
   "success": false,
@@ -1362,6 +1479,7 @@ All endpoints may return the following error responses:
 ```
 
 **401 Unauthorized:**
+
 ```json
 {
   "success": false,
@@ -1371,6 +1489,7 @@ All endpoints may return the following error responses:
 ```
 
 **403 Forbidden:**
+
 ```json
 {
   "success": false,
@@ -1380,6 +1499,7 @@ All endpoints may return the following error responses:
 ```
 
 **404 Not Found:**
+
 ```json
 {
   "success": false,
@@ -1389,6 +1509,7 @@ All endpoints may return the following error responses:
 ```
 
 **500 Internal Server Error:**
+
 ```json
 {
   "success": false,
@@ -1402,12 +1523,15 @@ All endpoints may return the following error responses:
 ## Data Types
 
 ### ISO 8601 Datetime Format
+
 All datetime fields should be in ISO 8601 format: `YYYY-MM-DDTHH:mm:ss.sssZ`
 
 Example: `2025-01-15T10:30:00.000Z`
 
 ### File References
+
 File attachments can be:
+
 - URLs to uploaded files
 - File IDs that can be resolved to URLs
 - Base64 encoded strings (for small images like avatars)
@@ -1420,7 +1544,7 @@ File attachments can be:
 
 2. **Authorization**: Teachers should only be able to access projects, tasks, roles, quizzes, and submissions for courses they teach.
 
-3. **Cascading Deletes**: 
+3. **Cascading Deletes**:
    - Deleting a project should delete all associated tasks, roles, quizzes, and submissions
    - Deleting a task should delete all associated submissions
    - Consider soft deletes for important data
@@ -1440,7 +1564,7 @@ File attachments can be:
 
 6. **Performance**: Consider pagination for list endpoints that may return large datasets.
 
-7. **Validation**: 
+7. **Validation**:
    - Ensure `correctAnswer` index is within bounds of `options` array
    - Validate datetime formats
    - Validate file types and sizes for uploads
@@ -1451,4 +1575,3 @@ File attachments can be:
 9. **Timestamps**: All entities should have `createdAt` and `updatedAt` timestamps that are automatically managed.
 
 10. **Student Data**: The frontend may pass `studentId` and `studentName` - the backend should validate these against actual student records if available.
-

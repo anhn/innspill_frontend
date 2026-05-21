@@ -3,10 +3,12 @@
 This document defines the API endpoints needed for the Assignment Support dashboard, where students access their courses, projects, tasks, and stakeholders based on their username.
 
 ## Base URL
+
 - Development: `http://localhost:3000/api/v1`
 - Production: `https://innspill.ai/microapi/api/v1`
 
 ## Authentication
+
 All endpoints use `isOptionalAuth` middleware (authentication is optional but recommended).
 
 ---
@@ -32,6 +34,7 @@ All endpoints use `isOptionalAuth` middleware (authentication is optional but re
 **Description:** Get projects for courses the student is enrolled in.
 
 **Implementation:**
+
 1. Get all courses for student (using endpoint #1)
 2. For each course, call `GET /projects/course/:courseId`
 3. Aggregate all projects
@@ -47,6 +50,7 @@ All endpoints use `isOptionalAuth` middleware (authentication is optional but re
 **Description:** Get published tasks for projects the student has access to.
 
 **Implementation:**
+
 1. Get all projects for student (using endpoint #2 logic)
 2. For each project, call `GET /assessment-tasks/project/:projectId`
 3. Filter tasks where `status = 'published'`
@@ -63,6 +67,7 @@ All endpoints use `isOptionalAuth` middleware (authentication is optional but re
 **Description:** Get stakeholders for projects the student has access to.
 
 **Implementation:**
+
 1. Get all projects for student (using endpoint #2 logic)
 2. For each project, call `GET /assessment-roles/project/:projectId`
 3. Aggregate all stakeholders
