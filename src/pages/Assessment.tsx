@@ -53,6 +53,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { Boxplot } from "@/components/Boxplot";
 
 const FEEDBACK_MODES = ['fewshot', 'rule-based', 'revision', 'framework', 'student-involving', 'general'];
+const FEEDBACK_MODEL_OPTIONS = [
+  { value: "gpt-5.4-mini", label: "GPT 5.4 mini" },
+  { value: "gpt-4o-mini", label: "GPT 4o mini" },
+] as const;
+
+type FeedbackModel = typeof FEEDBACK_MODEL_OPTIONS[number]["value"];
 
 interface Course {
   id: string;
@@ -3050,6 +3056,7 @@ function SubmissionSection({
       conceptMasteryScore?: number;
       starScore?: number; // Backward compatibility
       stakeholderId?: string;
+      feedbackModel?: FeedbackModel;
     } 
   }>({});
   // Batch feedback generation state
@@ -3059,6 +3066,7 @@ function SubmissionSection({
   const [groupedSubmissions, setGroupedSubmissions] = useState<any[]>([]);
   const [loadingGroupedData, setLoadingGroupedData] = useState(false);
   const [useNewFeedbackGenerator, setUseNewFeedbackGenerator] = useState(true);
+  const [feedbackModel, setFeedbackModel] = useState<FeedbackModel>("gpt-5.4-mini");
   const [enableFeedbackSkill, setEnableFeedbackSkill] = useState(false);
   const [selectedFeedbackSkillId, setSelectedFeedbackSkillId] = useState("research-programming-review");
   const [revisionDistribution, setRevisionDistribution] = useState<"auto" | "always" | "never">("auto");
@@ -3082,6 +3090,7 @@ function SubmissionSection({
   const applyFeedbackGenerationSettings = (requestBody: any) => {
     requestBody.useNewFeedbackGenerator = useNewFeedbackGenerator;
     requestBody.agentVersion = useNewFeedbackGenerator ? "workflow" : "original";
+    requestBody.feedbackModel = feedbackModel;
 
     if (!useNewFeedbackGenerator) {
       return requestBody;
@@ -3615,6 +3624,7 @@ function SubmissionSection({
               conceptMasteryScore?: number;
               starScore?: number;
               stakeholderId?: string;
+              feedbackModel?: FeedbackModel;
             } 
           } = {};
           
@@ -3640,6 +3650,7 @@ function SubmissionSection({
                 conceptMasteryScore: item.conceptMasteryScore !== undefined ? item.conceptMasteryScore : undefined,
                 starScore: starScore, // Backward compatibility
                 stakeholderId: item.stakeholderId || undefined,
+                feedbackModel: item.feedbackModel || feedbackModel,
               };
             }
           });
@@ -4108,6 +4119,7 @@ function SubmissionSection({
                 conceptMasteryScore: conceptMasteryScore !== undefined ? conceptMasteryScore : undefined,
                 starScore: starScore, // Backward compatibility
                 stakeholderId: stakeholderId || undefined,
+                feedbackModel: generatedData.feedbackModel || feedbackModel,
               }
             }));
           }
@@ -4589,6 +4601,9 @@ function SubmissionSection({
                   <Badge variant={useNewFeedbackGenerator ? "default" : "secondary"}>
                     {useNewFeedbackGenerator ? "New generator" : "Original generator"}
                   </Badge>
+                  <Badge variant="outline">
+                    Model {feedbackModel}
+                  </Badge>
                   {useNewFeedbackGenerator && (
                     <>
                       <Badge variant={enableFeedbackSkill ? "default" : "outline"}>
@@ -4632,6 +4647,25 @@ function SubmissionSection({
                         checked={useNewFeedbackGenerator}
                         onCheckedChange={(checked) => setUseNewFeedbackGenerator(Boolean(checked))}
                       />
+                    </div>
+
+                    <div>
+                      <Label>Feedback Model</Label>
+                      <Select
+                        value={feedbackModel}
+                        onValueChange={(value) => setFeedbackModel(value as FeedbackModel)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FEEDBACK_MODEL_OPTIONS.map((model) => (
+                            <SelectItem key={model.value} value={model.value}>
+                              {model.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
