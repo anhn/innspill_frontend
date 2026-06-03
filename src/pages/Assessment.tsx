@@ -3064,6 +3064,8 @@ function SubmissionSection({
   const [revisionDistribution, setRevisionDistribution] = useState<"auto" | "always" | "never">("auto");
   const [revisionQualityThreshold, setRevisionQualityThreshold] = useState(4);
   const [includeWorkflowDebug, setIncludeWorkflowDebug] = useState(false);
+  const [ragMode, setRagMode] = useState<"legacy" | "hybrid" | "agentic">("legacy");
+  const [includeRagDebug, setIncludeRagDebug] = useState(false);
   const [feedbackSettingsDialogOpen, setFeedbackSettingsDialogOpen] = useState(false);
   // Attachment content dialog state
   const [attachmentContentDialog, setAttachmentContentDialog] = useState<{
@@ -3092,6 +3094,8 @@ function SubmissionSection({
     requestBody.revisionDistribution = revisionDistribution;
     requestBody.revisionQualityThreshold = revisionQualityThreshold;
     requestBody.includeWorkflowDebug = includeWorkflowDebug;
+    requestBody.ragMode = ragMode;
+    requestBody.includeRagDebug = includeRagDebug;
 
     return requestBody;
   };
@@ -3739,6 +3743,8 @@ function SubmissionSection({
           const params = new URLSearchParams({
             userName: userName,
             useAIGuideline: String(useAIGuideline),
+            ragMode,
+            includeRagDebug: String(includeRagDebug),
           });
           if (useNewFeedbackGenerator && enableFeedbackSkill) {
             params.append('enableFeedbackSkill', 'true');
@@ -4589,6 +4595,9 @@ function SubmissionSection({
                         Skill {enableFeedbackSkill ? "on" : "off"}
                       </Badge>
                       <Badge variant="outline">Revision {revisionDistribution}</Badge>
+                      <Badge variant={ragMode === "legacy" ? "outline" : "default"}>
+                        RAG {ragMode}
+                      </Badge>
                       {revisionDistribution === "auto" && (
                         <Badge variant="outline">Threshold {revisionQualityThreshold}</Badge>
                       )}
@@ -4683,16 +4692,45 @@ function SubmissionSection({
                           onChange={(event) => setRevisionQualityThreshold(Number(event.target.value))}
                         />
                       </div>
+
+                      <div>
+                        <Label>RAG Mode</Label>
+                        <Select
+                          value={ragMode}
+                          disabled={!useNewFeedbackGenerator}
+                          onValueChange={(value) => setRagMode(value as "legacy" | "hybrid" | "agentic")}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select RAG mode" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="legacy">Legacy</SelectItem>
+                            <SelectItem value="hybrid">Hybrid</SelectItem>
+                            <SelectItem value="agentic">Agentic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="include-workflow-debug"
-                        checked={includeWorkflowDebug}
-                        disabled={!useNewFeedbackGenerator}
-                        onCheckedChange={(checked) => setIncludeWorkflowDebug(Boolean(checked))}
-                      />
-                      <Label htmlFor="include-workflow-debug">Include workflow debug</Label>
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="include-workflow-debug"
+                          checked={includeWorkflowDebug}
+                          disabled={!useNewFeedbackGenerator}
+                          onCheckedChange={(checked) => setIncludeWorkflowDebug(Boolean(checked))}
+                        />
+                        <Label htmlFor="include-workflow-debug">Include workflow debug</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="include-rag-debug"
+                          checked={includeRagDebug}
+                          disabled={!useNewFeedbackGenerator || ragMode === "legacy"}
+                          onCheckedChange={(checked) => setIncludeRagDebug(Boolean(checked))}
+                        />
+                        <Label htmlFor="include-rag-debug">Include RAG debug</Label>
+                      </div>
                     </div>
                   </div>
 
