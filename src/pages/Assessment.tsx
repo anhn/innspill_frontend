@@ -52,6 +52,14 @@ import API_ENDPOINTS from "@/config/api";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, BarChart, Bar, ComposedChart } from "recharts";
 import { Boxplot } from "@/components/Boxplot";
 
+const FEEDBACK_MODES = ['fewshot', 'rule-based', 'revision', 'framework', 'student-involving', 'general'];
+const FEEDBACK_MODEL_OPTIONS = [
+  { value: "gpt-5.4-mini", label: "GPT 5.4 mini" },
+  { value: "gpt-4o-mini", label: "GPT 4o mini" },
+] as const;
+
+type FeedbackModel = typeof FEEDBACK_MODEL_OPTIONS[number]["value"];
+
 interface Course {
   id: string;
   name: string;
@@ -3048,6 +3056,7 @@ function SubmissionSection({
       conceptMasteryScore?: number;
       starScore?: number; // Backward compatibility
       stakeholderId?: string;
+      feedbackModel?: FeedbackModel;
     } 
   }>({});
   // Batch feedback generation state
@@ -3056,6 +3065,16 @@ function SubmissionSection({
   const [emptySubmissions, setEmptySubmissions] = useState<Submission[]>([]);
   const [groupedSubmissions, setGroupedSubmissions] = useState<any[]>([]);
   const [loadingGroupedData, setLoadingGroupedData] = useState(false);
+  const [useNewFeedbackGenerator, setUseNewFeedbackGenerator] = useState(true);
+  const [feedbackModel, setFeedbackModel] = useState<FeedbackModel>("gpt-5.4-mini");
+  const [enableFeedbackSkill, setEnableFeedbackSkill] = useState(false);
+  const [selectedFeedbackSkillId, setSelectedFeedbackSkillId] = useState("research-programming-review");
+  const [revisionDistribution, setRevisionDistribution] = useState<"auto" | "always" | "never">("auto");
+  const [revisionQualityThreshold, setRevisionQualityThreshold] = useState(4);
+  const [includeWorkflowDebug, setIncludeWorkflowDebug] = useState(false);
+  const [ragMode, setRagMode] = useState<"legacy" | "hybrid" | "agentic">("legacy");
+  const [includeRagDebug, setIncludeRagDebug] = useState(false);
+  const [feedbackSettingsDialogOpen, setFeedbackSettingsDialogOpen] = useState(false);
   // Attachment content dialog state
   const [attachmentContentDialog, setAttachmentContentDialog] = useState<{
     open: boolean;
@@ -3067,6 +3086,44 @@ function SubmissionSection({
   // Append attachment to submission: only allow once per submission
   const [attachmentAppendedSubmissionIds, setAttachmentAppendedSubmissionIds] = useState<Set<string>>(() => new Set());
   const [appendingAttachmentSubmissionId, setAppendingAttachmentSubmissionId] = useState<string | null>(null);
+
+  const applyFeedbackGenerationSettings = (requestBody: any) => {
+    requestBody.useNewFeedbackGenerator = useNewFeedbackGenerator;
+    requestBody.agentVersion = useNewFeedbackGenerator ? "workflow" : "original";
+    requestBody.feedbackModel = feedbackModel;
+
+    if (!useNewFeedbackGenerator) {
+      return requestBody;
+    }
+
+    requestBody.enableFeedbackSkill = enableFeedbackSkill;
+    if (enableFeedbackSkill) {
+      requestBody.skillId = selectedFeedbackSkillId;
+    }
+    requestBody.revisionDistribution = revisionDistribution;
+    requestBody.revisionQualityThreshold = revisionQualityThreshold;
+    requestBody.includeWorkflowDebug = includeWorkflowDebug;
+    requestBody.ragMode = ragMode;
+    requestBody.includeRagDebug = includeRagDebug;
+
+    return requestBody;
+  };
+
+  const applySelectedFeedbackMode = (requestBody: any, selectedMode: string, task?: Task) => {
+    if (FEEDBACK_MODES.includes(selectedMode)) {
+      requestBody.feedbackMode = selectedMode;
+      if (selectedMode === 'rule-based' && task?.instruction) {
+        requestBody.instruction = task.instruction;
+      }
+    } else if (selectedMode === "learn-from-human") {
+      requestBody.stakeholderId = "learn-from-human";
+      requestBody.feedbackMode = "fewshot";
+    } else if (selectedMode) {
+      requestBody.stakeholderId = selectedMode;
+    }
+
+    return requestBody;
+  };
   
   // Function to read attachment content for a submission
   const readSubmissionAttachments = async (submissionId: string) => {
@@ -3525,28 +3582,10 @@ function SubmissionSection({
         submissionIds: submissionIds,
         useAIGuideline: useAIGuideline,
       };
-      
-      // Check if selectedStakeholderId is a feedback mode or stakeholder
-      const feedbackModes = ['fewshot', 'rule-based', 'revision', 'framework', 'student-involving', 'general'];
-      
-      // Default to "general" if nothing is selected
+
       const selectedMode = selectedStakeholderId || 'general';
-      
-      if (feedbackModes.includes(selectedMode)) {
-        // New feedback generation approach
-        requestBody.feedbackMode = selectedMode;
-        // For rule-based mode, include instruction from task if available
-        if (selectedMode === 'rule-based' && task?.instruction) {
-          requestBody.instruction = task.instruction;
-        }
-      } else if (selectedMode === "learn-from-human") {
-        // Legacy: few-shot learning via stakeholder
-        requestBody.stakeholderId = "learn-from-human";
-        requestBody.feedbackMode = "fewshot";
-      } else {
-        // Legacy: stakeholder-based approach (fallback for any remaining stakeholder IDs)
-        requestBody.stakeholderId = selectedMode;
-      }
+      applyFeedbackGenerationSettings(requestBody);
+      applySelectedFeedbackMode(requestBody, selectedMode, task);
       
       // Debug: Log the request body
       console.log('[Batch Feedback Generation] Request body:', JSON.stringify(requestBody, null, 2));
@@ -3585,6 +3624,7 @@ function SubmissionSection({
               conceptMasteryScore?: number;
               starScore?: number;
               stakeholderId?: string;
+              feedbackModel?: FeedbackModel;
             } 
           } = {};
           
@@ -3610,6 +3650,7 @@ function SubmissionSection({
                 conceptMasteryScore: item.conceptMasteryScore !== undefined ? item.conceptMasteryScore : undefined,
                 starScore: starScore, // Backward compatibility
                 stakeholderId: item.stakeholderId || undefined,
+                feedbackModel: item.feedbackModel || feedbackModel,
               };
             }
           });
@@ -3713,11 +3754,15 @@ function SubmissionSection({
           const params = new URLSearchParams({
             userName: userName,
             useAIGuideline: String(useAIGuideline),
+            ragMode,
+            includeRagDebug: String(includeRagDebug),
           });
+          if (useNewFeedbackGenerator && enableFeedbackSkill) {
+            params.append('enableFeedbackSkill', 'true');
+            params.append('skillId', selectedFeedbackSkillId);
+          }
 
-          // Set feedbackMode for new feedback generation approaches
-          const feedbackModes = ['fewshot', 'rule-based', 'revision', 'framework', 'student-involving', 'general'];
-          if (feedbackModes.includes(approachId)) {
+          if (FEEDBACK_MODES.includes(approachId)) {
             params.append('feedbackMode', approachId);
           } else if (approachId === "learn-from-human") {
             // Legacy: few-shot learning via stakeholder
@@ -3876,26 +3921,12 @@ function SubmissionSection({
           const requestBody: any = {
             useAIGuideline: useAIGuideline,
           };
+          applyFeedbackGenerationSettings(requestBody);
           if (inputTextToUse) {
             requestBody.experimentInputText = inputTextToUse;
           }
 
-          // Set feedbackMode for new feedback generation approaches
-          const feedbackModes = ['fewshot', 'rule-based', 'revision', 'framework', 'student-involving', 'general'];
-          if (feedbackModes.includes(approachId)) {
-            requestBody.feedbackMode = approachId;
-            // For rule-based mode, include instruction from task if available
-            if (approachId === 'rule-based' && task?.instruction) {
-              requestBody.instruction = task.instruction;
-            }
-          } else if (approachId === "learn-from-human") {
-            // Legacy: few-shot learning via stakeholder
-            requestBody.stakeholderId = "learn-from-human";
-            requestBody.feedbackMode = "fewshot";
-          } else if (approachId) {
-            // Legacy: stakeholder-based approach
-            requestBody.stakeholderId = approachId;
-          }
+          applySelectedFeedbackMode(requestBody, approachId, task);
 
           const response = await fetch(
             `${API_ENDPOINTS.assessmentSubmissions.generateFeedback(submission.id)}?userName=${encodeURIComponent(userName)}`,
@@ -3990,28 +4021,10 @@ function SubmissionSection({
       const requestBody: any = {
         useAIGuideline: useAIGuideline,
       };
-      
-      // Check if selectedStakeholderId is a feedback mode or stakeholder
-      const feedbackModes = ['fewshot', 'rule-based', 'revision', 'framework', 'student-involving', 'general'];
-      
-      // Default to "general" if nothing is selected
+
       const selectedMode = selectedStakeholderId || 'general';
-      
-      if (feedbackModes.includes(selectedMode)) {
-        // New feedback generation approach
-        requestBody.feedbackMode = selectedMode;
-        // For rule-based mode, include instruction from task if available
-        if (selectedMode === 'rule-based' && task?.instruction) {
-          requestBody.instruction = task.instruction;
-        }
-      } else if (selectedMode === "learn-from-human") {
-        // Legacy: few-shot learning via stakeholder
-        requestBody.stakeholderId = "learn-from-human";
-        requestBody.feedbackMode = "fewshot";
-      } else {
-        // Legacy: stakeholder-based approach (fallback for any remaining stakeholder IDs)
-        requestBody.stakeholderId = selectedMode;
-      }
+      applyFeedbackGenerationSettings(requestBody);
+      applySelectedFeedbackMode(requestBody, selectedMode, task);
       
       const response = await fetch(
         `${API_ENDPOINTS.assessmentSubmissions.generateFeedback(submission.id)}?userName=${encodeURIComponent(userName)}`,
@@ -4106,6 +4119,7 @@ function SubmissionSection({
                 conceptMasteryScore: conceptMasteryScore !== undefined ? conceptMasteryScore : undefined,
                 starScore: starScore, // Backward compatibility
                 stakeholderId: stakeholderId || undefined,
+                feedbackModel: generatedData.feedbackModel || feedbackModel,
               }
             }));
           }
@@ -4214,14 +4228,12 @@ function SubmissionSection({
       }
       
       // Include stakeholderId only if it's a valid stakeholder ID (not a feedback mode)
-      const feedbackModes = ['fewshot', 'rule-based', 'revision', 'framework', 'student-involving', 'general'];
-      
       // Only include stakeholderId if it's NOT a feedback mode
       // Feedback modes should not be saved as stakeholderId
-      if (selectedStakeholderId && !feedbackModes.includes(selectedStakeholderId)) {
+      if (selectedStakeholderId && !FEEDBACK_MODES.includes(selectedStakeholderId)) {
         // This is a real stakeholder ID
         requestBody.stakeholderId = selectedStakeholderId;
-      } else if (editingSubmission.stakeholderId && !feedbackModes.includes(editingSubmission.stakeholderId)) {
+      } else if (editingSubmission.stakeholderId && !FEEDBACK_MODES.includes(editingSubmission.stakeholderId)) {
         // Use existing stakeholderId from submission if it's not a feedback mode
         requestBody.stakeholderId = editingSubmission.stakeholderId;
       }
@@ -4583,6 +4595,186 @@ function SubmissionSection({
                 </Select>
                 </div>
               </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant={useNewFeedbackGenerator ? "default" : "secondary"}>
+                    {useNewFeedbackGenerator ? "New generator" : "Original generator"}
+                  </Badge>
+                  <Badge variant="outline">
+                    Model {feedbackModel}
+                  </Badge>
+                  {useNewFeedbackGenerator && (
+                    <>
+                      <Badge variant={enableFeedbackSkill ? "default" : "outline"}>
+                        Skill {enableFeedbackSkill ? "on" : "off"}
+                      </Badge>
+                      <Badge variant="outline">Revision {revisionDistribution}</Badge>
+                      <Badge variant={ragMode === "legacy" ? "outline" : "default"}>
+                        RAG {ragMode}
+                      </Badge>
+                      {revisionDistribution === "auto" && (
+                        <Badge variant="outline">Threshold {revisionQualityThreshold}</Badge>
+                      )}
+                    </>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFeedbackSettingsDialogOpen(true)}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Feedback Settings
+                </Button>
+              </div>
+
+              <Dialog open={feedbackSettingsDialogOpen} onOpenChange={setFeedbackSettingsDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Feedback Settings</DialogTitle>
+                    <DialogDescription>
+                      Configure which feedback generator and revision controls are used for single, batch, and experiment generation.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between rounded-md border p-3">
+                      <Label htmlFor="use-new-feedback-generator">Use New Feedback Generator</Label>
+                      <Checkbox
+                        id="use-new-feedback-generator"
+                        checked={useNewFeedbackGenerator}
+                        onCheckedChange={(checked) => setUseNewFeedbackGenerator(Boolean(checked))}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Feedback Model</Label>
+                      <Select
+                        value={feedbackModel}
+                        onValueChange={(value) => setFeedbackModel(value as FeedbackModel)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FEEDBACK_MODEL_OPTIONS.map((model) => (
+                            <SelectItem key={model.value} value={model.value}>
+                              {model.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2 rounded-md border p-3">
+                        <Checkbox
+                          id="enable-feedback-skill"
+                          checked={enableFeedbackSkill}
+                          disabled={!useNewFeedbackGenerator}
+                          onCheckedChange={(checked) => setEnableFeedbackSkill(Boolean(checked))}
+                        />
+                        <Label htmlFor="enable-feedback-skill">Skill</Label>
+                      </div>
+
+                      <div>
+                        <Label>Skill Pack</Label>
+                        <Select
+                          value={selectedFeedbackSkillId}
+                          disabled={!useNewFeedbackGenerator || !enableFeedbackSkill}
+                          onValueChange={setSelectedFeedbackSkillId}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select skill" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="research-programming-review">Research Programming Review</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label>Revision Distribution</Label>
+                        <Select
+                          value={revisionDistribution}
+                          disabled={!useNewFeedbackGenerator}
+                          onValueChange={(value) => setRevisionDistribution(value as "auto" | "always" | "never")}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Revision policy" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">Auto</SelectItem>
+                            <SelectItem value="always">Always</SelectItem>
+                            <SelectItem value="never">Never</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="revision-quality-threshold">Revision Threshold</Label>
+                        <Input
+                          id="revision-quality-threshold"
+                          type="number"
+                          min={0}
+                          max={5}
+                          step={0.5}
+                          disabled={!useNewFeedbackGenerator || revisionDistribution !== "auto"}
+                          value={revisionQualityThreshold}
+                          onChange={(event) => setRevisionQualityThreshold(Number(event.target.value))}
+                        />
+                      </div>
+
+                      <div>
+                        <Label>RAG Mode</Label>
+                        <Select
+                          value={ragMode}
+                          disabled={!useNewFeedbackGenerator}
+                          onValueChange={(value) => setRagMode(value as "legacy" | "hybrid" | "agentic")}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select RAG mode" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="legacy">Legacy</SelectItem>
+                            <SelectItem value="hybrid">Hybrid</SelectItem>
+                            <SelectItem value="agentic">Agentic</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="include-workflow-debug"
+                          checked={includeWorkflowDebug}
+                          disabled={!useNewFeedbackGenerator}
+                          onCheckedChange={(checked) => setIncludeWorkflowDebug(Boolean(checked))}
+                        />
+                        <Label htmlFor="include-workflow-debug">Include workflow debug</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="include-rag-debug"
+                          checked={includeRagDebug}
+                          disabled={!useNewFeedbackGenerator || ragMode === "legacy"}
+                          onCheckedChange={(checked) => setIncludeRagDebug(Boolean(checked))}
+                        />
+                        <Label htmlFor="include-rag-debug">Include RAG debug</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button type="button" onClick={() => setFeedbackSettingsDialogOpen(false)}>
+                      Done
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               {selectedTaskId && (
                 <>
